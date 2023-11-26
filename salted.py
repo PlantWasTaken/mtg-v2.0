@@ -1,4 +1,5 @@
-def get_bin_salt(seed, mail):
+import asyncio
+async def get_bin_salt(seed, mail, lock):
     seed = seed #110
     a = mail
 
