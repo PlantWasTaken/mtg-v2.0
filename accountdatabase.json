@@ -1,5 +1,5 @@
 {
-    "salt_seed": 3,
+    "salt_seed": 13,
     "accounts": {
         "black ring control": {
             "mail": "maxerkul92@hotmail.com",
@@ -81,10 +81,9 @@
             "mail": "hfqabitcwr@hotmail.com",
             "pass": "EFwnJamryA"
         },
-        "meow3": {
-            "mail": "meow1",
-            "pass": "meow2"
+        "UR flame": {
+            "mail": "meowkingkitten3.1.4@gmail.com",
+            "pass": "OpPZTuDGLx"
         }
-
     }
 }
