@@ -3,12 +3,14 @@
 #wiz pass: CoolCat123
 #mammaogpappa
 #881804771981-5phsg8mqt1g7jk8lja2gcprhedcuu3ui.apps.googleusercontent.com
-def get_verification_link():
+import asyncio
+async def get_verification_link(lock):
+
     import email, imaplib
     import re
 
     username= "meowkingkitten314@gmail.com "
-    
+    password = 'passowed'
 
     imap = imaplib.IMAP4_SSL("imap.gmail.com")
     imap.login(username, password) #log into googuru
