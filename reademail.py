@@ -1,8 +1,7 @@
 #meowkingkitten314@gmail.com 
 #DELETE m.eowkingkitten314@gmail.com account
 #wiz pass: CoolCat123
-#mammaogpappa
-#881804771981-5phsg8mqt1g7jk8lja2gcprhedcuu3ui.apps.googleusercontent.com
+
 import asyncio
 async def get_verification_link(lock):
 
