@@ -1,10 +1,11 @@
 import time as t
 import pyautogui
+import asyncio
 
-def redeem_code():
+async def redeem_code(lock):
     f = open('codes.txt').readlines()
     f = [i.split() for i in f]
-    t.sleep(4)
+    await asyncio.sleep(4)
     for i in range(len(f)):
         #ctrl + a
         pyautogui.keyDown('ctrl')
