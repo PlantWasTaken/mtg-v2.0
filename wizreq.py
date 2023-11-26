@@ -1,13 +1,16 @@
 import requests as r
 import subprocess
+import asyncio
 import psutil
 
-def open_register_site(url):
+async def open_register_site(url, lock):
+    print("open reg site")
     url = url
-    pid = open_url_in_incognito(url)
+    pid = await open_url_in_incognito(url, lock)
     return pid
 
-def open_url_in_incognito(url):
+async def open_url_in_incognito(url, lock):
+    print("open incog")
     # Specify the path to your Chrome executable
     chrome_path = r'C:\Program Files\Google\Chrome\Application\chrome.exe'  # Change this to your Chrome executable path
 
