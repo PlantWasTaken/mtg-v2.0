@@ -1,5 +1,4 @@
 #discord,async,psutil,pyautogui,email,imaplib
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -16,19 +15,41 @@ bot = commands.Bot(command_prefix='$',intents = discord.Intents.all())
 MY_GUILD = discord.Object(id=1177735119738519552)
 
 async def get_decklists_emails():
-    with open(r'C:\Users\Max\Desktop\mtg account v2\mtg-v2.0-main\accountdatabase.json', "r") as read_file:
-        data = json.load(read_file)
+    data = await accountdatabase_read_json()
 
     decklists = [i for i in data['accounts']]
     emails = [data['accounts'][i]['mail'] for i in data['accounts']]
 
     return decklists,emails
 
-async def read_json():
-    with open(r'C:\Users\Max\Desktop\mtg account v2\mtg-v2.0-main\accountdatabase.json', "r") as read_file:
+async def accountdatabase_read_json():
+    with open(r'C:\Users\maxel\OneDrive\Skrivebord\mtg\accountdatabase.json', "r") as read_file:
         data = json.load(read_file)
 
     return data
+
+async def read_ids(): #read ids
+    with open(r'C:\Users\maxel\OneDrive\Skrivebord\mtg\idUses.json', "r") as read_file:
+        data = json.load(read_file)
+
+    return data
+
+async def id_check(perm, id):
+    data = await read_ids()
+
+    sender_id = id
+
+    registered_users = [str(i) for i in data] #all ids in databse
+
+    #check if user id is registered
+    if(str(sender_id) not in registered_users): #no user with id x present
+        return None
+    
+    perm = data[str(sender_id)][perm] #perission to use new acc
+    if(perm == False):
+        return False
+    else:
+        return True
 
 valid_user_id = [937017841356505278,972980724951040051] #lunamowon, plsnt
 
@@ -45,9 +66,20 @@ async def on_ready():
 @app_commands.describe(val = "Which deck do you want? ")
 async def get_account(interaction: discord.Interaction, val: str):
     sender_id = interaction.user.id
+    perm = await id_check("account", sender_id) #redudant perm check,
+    
+    if(perm == False):
+        await interaction.response.send_message(f'Not permitted',ephemeral=True)
+        raise Exception("Permission") #bad
+    
+    elif(perm == None):
+        await interaction.response.send_message(f'Use /register to register an account.',ephemeral=True)
+        raise Exception("No account present") #no account present
+    else:
+        pass #good
 
     decklists,emails = await get_decklists_emails()
-    data = await read_json()
+    data = await accountdatabase_read_json()
 
     if(val not in decklists):
         await interaction.response.send_message("Provide a valid decklist",ephemeral=True)
@@ -59,8 +91,19 @@ async def get_account(interaction: discord.Interaction, val: str):
 
 @bot.tree.command(name = "accounts", guild=MY_GUILD, description="all accounts in database")
 async def get_decklists(interaction: discord.Interaction):
+    sender_id = interaction.user.id
+    perm = await id_check("accounts", sender_id)
+    
+    if(perm == False):
+        await interaction.response.send_message(f'Not permitted',ephemeral=True)
+        raise Exception("Permission") #bad
+    elif(perm == None):
+        await interaction.response.send_message(f'Use /register to register an account.',ephemeral=True)
+        raise Exception("No account present") #no account present
+    else:
+        pass #good
+    
     decklists,emails = await get_decklists_emails()
-    discord_id = interaction.user.id
     
     msg_str = ''
     for i in range(len(decklists)):
@@ -73,19 +116,25 @@ async def get_decklists(interaction: discord.Interaction):
 @app_commands.describe(passw = "Password: ")
 async def get_account(interaction: discord.Interaction, mail: str, passw: str, decklist: str):
     sender_id = interaction.user.id
-    decklists,emails = await get_decklists_emails()
-
-    if(sender_id not in valid_user_id):
-        await interaction.response.send_message(f'Not permitted',ephemeral=True)
-        raise ValueError
+    perm = await id_check("addaccount", str(sender_id))
     
+    if(perm == False):
+        await interaction.response.send_message(f'Not permitted',ephemeral=True)
+        raise Exception("Permission") #bad
+    elif(perm == None):
+        await interaction.response.send_message(f'Use /register to register an account.',ephemeral=True)
+        raise Exception("No account present") #no account present
+    else:
+        pass #good
+
+    decklists,emails = await get_decklists_emails()
     if(decklist in decklists):
         await interaction.response.send_message(f'No duplicate names',ephemeral=True)
-        raise ValueError
+        raise Exception("Duplicate name")
     
     if(mail in emails):
         await interaction.response.send_message(f'No duplicate emails',ephemeral=True)
-        raise ValueError
+        raise Exception("Duplicate email")
     
     account_dict = {
         decklist : {
@@ -109,10 +158,29 @@ async def get_account(interaction: discord.Interaction, mail: str, passw: str, d
 command_locks = {}
 @bot.tree.command(name = "newacc", guild=MY_GUILD, description="create a new account\ntakes 1 minute")
 async def new_account(interaction: discord.Interaction):
+    data = await read_ids()
     sender_id = interaction.user.id
-    if(sender_id not in valid_user_id):
+
+    #tries to acces databse, at id. if no id, catch error return /register
+    try: #ugly code, fix later
+        newacc_perm = data[str(sender_id)]['newaccount']['perm'] #perission to use new acc
+    except:
+        await interaction.response.send_message(f'Use /register to register an account.',ephemeral=True)
+        raise Exception("No account present") #no account present
+    
+    if(newacc_perm == False):
         await interaction.response.send_message(f'Not permitted',ephemeral=True)
-        raise ValueError
+        raise Exception("Permission") #bad
+    else:
+        if(data[str(sender_id)]['newaccount']['uses'] <= 0): #check for zeroes
+            await interaction.response.send_message(f'You have zero uses left.',ephemeral=True)
+            raise Exception("No more uses")
+        
+        else: #no zero eroor
+            data[str(sender_id)]['newaccount']['uses'] += -1 #removes one use
+            with open(r'C:\Users\maxel\OneDrive\Skrivebord\mtg\idUses.json', "w") as write_file:
+                json.dump(data, write_file, indent=4)
+            #pass
     
     # Get or create a lock for this command
     lock = command_locks.get('example', None)
@@ -126,7 +194,7 @@ async def new_account(interaction: discord.Interaction):
         try:
             mail, passw, usn = await create_account("Cool Cat", lock=asyncio.Lock()) #redudant lock will fix later
             print(mail,passw,usn)
-            data = await read_json()
+            data = await accountdatabase_read_json()
             seed = data['salt_seed']
             print(seed)
             print("\n\n")
@@ -139,23 +207,77 @@ async def new_account(interaction: discord.Interaction):
 @bot.tree.command(name = "backup", guild=MY_GUILD, description="returns a backup of all accounts")
 async def new_account(interaction: discord.Interaction):
     sender_id = interaction.user.id
-    if(sender_id not in valid_user_id):
-        await interaction.response.send_message(f'Not permitted',ephemeral=True)
-        raise ValueError
+    perm = await id_check("backup", sender_id)
     
-    data = await read_json()
+    if(perm == False):
+        await interaction.response.send_message(f'Not permitted',ephemeral=True)
+        raise Exception("Permission") #bad
+    elif(perm == None):
+        await interaction.response.send_message(f'Use /register to register an account.',ephemeral=True)
+        raise Exception("No account present") #no account present
+    else:
+        pass #good
+
+    
+    data = await accountdatabase_read_json()
     await interaction.response.send_message(f'{data}')
 
 @bot.tree.command(name = "seed", guild=MY_GUILD, description="returns salt seed")
 async def new_account(interaction: discord.Interaction):
     sender_id = interaction.user.id
-    if(sender_id not in valid_user_id):
-        await interaction.response.send_message(f'Not permitted',ephemeral=True)
-        raise ValueError
+    perm = await id_check("seed", sender_id)
     
-    data = await read_json()
+    if(perm == False):
+        await interaction.response.send_message(f'Not permitted',ephemeral=True)
+        raise Exception("Permission") #bad
+    elif(perm == None):
+        await interaction.response.send_message(f'Use /register to register an account.',ephemeral=True)
+        raise Exception("No account present") #no account present
+    else:
+        pass #good
+
+    
+    data = await accountdatabase_read_json()
     seed = data['salt_seed']
     await interaction.response.send_message(f'{seed}\n{bin(seed)}')
+
+@bot.tree.command(name = "register", guild=MY_GUILD)
+async def get_account(interaction: discord.Interaction):
+    data = await read_ids()
+    sender_id = interaction.user.id
+
+    registered_users = [str(i) for i in data] #all ids in databse
+
+    if(str(sender_id) in registered_users): #raise error if user is already present
+        await interaction.response.send_message(f'You are already registered.',ephemeral=True)
+        raise Exception('Already present')
+
+    default_user = {
+        sender_id : {
+            "newaccount": {
+                "perm": False,
+                "uses": 0
+            },
+
+            "addaccount": False,
+            "backup": False,
+            "account" : True,
+            "accounts" : True,
+            "seed": False
+        }
+    }
+    
+    
+    with open(r'C:\Users\maxel\OneDrive\Skrivebord\mtg\idUses.json', "r") as read_file:
+        data = json.load(read_file)
+    
+    data[sender_id] = default_user[sender_id] #add user to data
+
+    with open(r'C:\Users\maxel\OneDrive\Skrivebord\mtg\idUses.json', "w") as write_file:
+        json.dump(data, write_file, indent=4)
+
+    #send register message
+    await interaction.response.send_message(f'You are now registered.',ephemeral=True)
 
 if __name__ == '__main__':
     bot.run(token)
