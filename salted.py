@@ -1,5 +1,6 @@
 import asyncio
 async def get_bin_salt(seed, mail, lock):
+    print("get bin salt")
     seed = seed #110
     a = mail
 
