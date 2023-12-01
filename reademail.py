@@ -1,15 +1,16 @@
 #meowkingkitten314@gmail.com 
 #DELETE m.eowkingkitten314@gmail.com account
 #wiz pass: CoolCat123
-
+#mammaogpappa
+#881804771981-5phsg8mqt1g7jk8lja2gcprhedcuu3ui.apps.googleusercontent.com
 import asyncio
 async def get_verification_link(lock):
-
+    print("read mail")
     import email, imaplib
     import re
 
     username= "meowkingkitten314@gmail.com "
-    password = 'passowed'
+    password = 'pass'
 
     imap = imaplib.IMAP4_SSL("imap.gmail.com")
     imap.login(username, password) #log into googuru
@@ -19,9 +20,25 @@ async def get_verification_link(lock):
     tmp, messages = imap.search(None, 'ALL') #search all mails
     message_ids = messages[0].split()
 
+    last_mail = message_ids[-1] #last mail.
+    print(last_mail)
+    while True: #check for new mail
+        status, messages = imap.select("INBOX") #access inbox
+
+        tmp, messages = imap.search(None, 'ALL') #search all mails
+        message_ids = messages[0].split()
+
+        current_latest_mail = message_ids[-1] #last mail.
+
+        #check for new mail
+        if(last_mail == current_latest_mail): #no new mail
+            await asyncio.sleep(5) #check for new mail every 5 seconds
+        else:
+            break
+    
     #print(message_ids) how many mails
 
-    tmp, data = imap.fetch(message_ids[-1], '(RFC822)') #-1 get last mail
+    tmp, data = imap.fetch(current_latest_mail, '(RFC822)') #-1 get last mail
 
     msg = email.message_from_bytes(data[0][1])
 
@@ -45,3 +62,5 @@ async def get_verification_link(lock):
 
     imap.logout()
     return cleaned_link
+
+#asyncio.run(get_verification_link(None))
