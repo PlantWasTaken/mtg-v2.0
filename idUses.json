@@ -1,0 +1,35 @@
+{
+    "937017841356505278": {
+        "newaccount": {
+            "perm": true,
+            "uses": 1000
+        },
+        "addaccount": true,
+        "account": true,
+        "accounts": true,
+        "backup": false,
+        "seed": false
+    },
+    "972980724951040051": {
+        "newaccount": {
+            "perm": true,
+            "uses": 1000
+        },
+        "addaccount": true,
+        "backup": true,
+        "account": true,
+        "accounts": true,
+        "seed": true
+    },
+    "791034435504046141": {
+        "newaccount": {
+            "perm": false,
+            "uses": 0
+        },
+        "addaccount": false,
+        "backup": false,
+        "account": true,
+        "accounts": true,
+        "seed": false
+    }
+}
