@@ -27,13 +27,13 @@ async def create_account(usn, lock):
 
         await asyncio.sleep(3)
 
-        with open("accountdatabase.json", "r") as read_file:
+        with open(r'C:\Users\Max\Desktop\mtg account v2\mtg-v2.0-main\accountdatabase.json', "r") as read_file:
             data = json.load(read_file)
 
         seed = data['salt_seed'] #salt seed
         data['salt_seed'] = int(data['salt_seed'])+1
 
-        with open("accountdatabase.json", "w") as write_file:
+        with open(r'C:\Users\Max\Desktop\mtg account v2\mtg-v2.0-main\accountdatabase.json', "w") as write_file:
             json.dump(data, write_file, indent=4)
 
 
@@ -47,7 +47,6 @@ async def create_account(usn, lock):
         #usn = 'Cool cat'
         usn = usn
 
-        print("get bin salt")
         mail_salt = await get_bin_salt(seed=seed, mail=mail, lock=lock)
 
         await asyncio.sleep(0.7)   
@@ -100,8 +99,9 @@ async def create_account(usn, lock):
         #awaiting email confirmation
 
         from reademail import get_verification_link #get link, open link, redeem codes.
-        await asyncio.sleep(20) #wait for email to come through
+        #await asyncio.sleep(30) #wait for email to come through
 
+        #Updated to look for new mail and not wait.
         verification_link = await get_verification_link(lock=lock)
         print(verification_link)
 
